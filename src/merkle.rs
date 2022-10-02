@@ -8,8 +8,8 @@ use borsh::BorshDeserialize;
 pub struct Node {
     pub id: [u8; HASH_SIZE],
     pub data_hash: Option<[u8; HASH_SIZE]>,
-    pub min_byte_range: usize,
-    pub max_byte_range: usize,
+    pub min_byte_range: u64,
+    pub max_byte_range: u64,
     pub left_child: Option<Box<Node>>,
     pub right_child: Option<Box<Node>>,
 }
@@ -17,7 +17,7 @@ pub struct Node {
 /// Concatenated ids and offsets for full set of nodes for an original data chunk, starting with the root.
 #[derive(Debug, PartialEq, Clone)]
 pub struct Proof {
-    pub offset: usize,
+    pub offset: u64,
     pub proof: Vec<u8>,
 }
 
@@ -42,7 +42,7 @@ pub struct BranchProof {
 /// Includes methods to deserialize [`Proof`]s.
 pub trait ProofDeserialize<T> {
     fn try_from_proof_slice(slice: &[u8]) -> Result<T, Error>;
-    fn offset(&self) -> usize;
+    fn offset(&self) -> u64;
 }
 
 impl ProofDeserialize<LeafProof> for LeafProof {
@@ -50,8 +50,8 @@ impl ProofDeserialize<LeafProof> for LeafProof {
         let proof = LeafProof::try_from_slice(slice)?;
         Ok(proof)
     }
-    fn offset(&self) -> usize {
-        usize::from_be_bytes(self.offset)
+    fn offset(&self) -> u64 {
+        u64::from_be_bytes(self.offset)
     }
 }
 
@@ -60,8 +60,8 @@ impl ProofDeserialize<BranchProof> for BranchProof {
         let proof = BranchProof::try_from_slice(slice)?;
         Ok(proof)
     }
-    fn offset(&self) -> usize {
-        usize::from_be_bytes(self.offset)
+    fn offset(&self) -> u64 {
+        u64::from_be_bytes(self.offset)
     }
 }
 
@@ -75,7 +75,15 @@ pub trait Helpers<T> {
     fn to_note_vec(&self) -> Vec<u8>;
 }
 
-impl Helpers<usize> for usize {
+// impl Helpers<u64> for u64 {
+//     fn to_note_vec(&self) -> Vec<u8> {
+//         let mut note = vec![0; NOTE_SIZE - 8];
+//         note.extend((*self as u64).to_be_bytes());
+//         note
+//     }
+// }
+
+impl Helpers<u64> for u64 {
     fn to_note_vec(&self) -> Vec<u8> {
         let mut note = vec![0; NOTE_SIZE - 8];
         note.extend((*self as u64).to_be_bytes());
@@ -92,8 +100,8 @@ pub fn generate_leaves(data: Vec<u8>, crypto: &Provider) -> Result<Vec<Node>, Er
 
     if data_chunks.len() > 1 && data_chunks.last().unwrap().len() < MIN_CHUNK_SIZE {
         last_two = data_chunks.split_off(data_chunks.len() - 2).concat();
-        let chunk_size = last_two.len() / 2 + (last_two.len() % 2 != 0) as usize;
-        data_chunks.append(&mut last_two.chunks(chunk_size).collect::<Vec<&[u8]>>());
+        let chunk_size = last_two.len() as u64 / 2 + (last_two.len() % 2 != 0) as u64;
+        data_chunks.append(&mut last_two.chunks(chunk_size as usize).collect::<Vec<&[u8]>>());
     }
 
     if data_chunks.last().unwrap().len() == MAX_CHUNK_SIZE {
@@ -101,10 +109,10 @@ pub fn generate_leaves(data: Vec<u8>, crypto: &Provider) -> Result<Vec<Node>, Er
     }
 
     let mut leaves = Vec::<Node>::new();
-    let mut min_byte_range = 0;
+    let mut min_byte_range: u64 = 0;
     for chunk in data_chunks.into_iter() {
         let data_hash = crypto.hash_sha256(chunk)?;
-        let max_byte_range = min_byte_range + &chunk.len();
+        let max_byte_range = min_byte_range + chunk.len() as u64;
         let offset = max_byte_range.to_note_vec();
         let id = crypto.hash_all_sha256(vec![&data_hash, &offset])?;
 
@@ -116,7 +124,7 @@ pub fn generate_leaves(data: Vec<u8>, crypto: &Provider) -> Result<Vec<Node>, Er
             left_child: None,
             right_child: None,
         });
-        min_byte_range = min_byte_range + &chunk.len();
+        min_byte_range = min_byte_range + chunk.len() as u64;
     }
     Ok(leaves)
 }
@@ -205,7 +213,7 @@ pub fn resolve_proofs(node: Node, proof: Option<Proof>) -> Result<Vec<Proof>, Er
 
 /// Validates chunk of data against provided [`Proof`].
 pub fn validate_chunk(
-    mut root_id: [u8; HASH_SIZE],
+    mut root_id: [u8; HASH_SIZE as usize],
     chunk: Node,
     proof: Proof,
     crypto: &Provider,

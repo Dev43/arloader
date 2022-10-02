@@ -71,8 +71,6 @@ pub enum Error {
     SolanaHashParse(#[from] solana_sdk::hash::ParseHashError),
     #[error("solana network error")]
     SolanaNetworkError,
-    #[error("solana hash parse {0}")]
-    TokioJoinError(#[from] tokio::task::JoinError),
     #[error("transaction is not signed")]
     UnsignedTransaction,
     #[error("url parse error: {0}")]

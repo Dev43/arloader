@@ -39,7 +39,7 @@ pub struct Chunk {
     data_size: u64,
     data_path: Base64,
     #[serde(with = "stringify")]
-    pub offset: usize,
+    pub offset: u64,
     chunk: Base64,
 }
 
@@ -95,7 +95,8 @@ impl Transaction {
             data_path: Base64(self.proofs[idx].proof.clone()),
             offset: self.proofs[idx].offset,
             chunk: Base64(
-                self.data.0[self.chunks[idx].min_byte_range..self.chunks[idx].max_byte_range]
+                self.data.0[self.chunks[idx].min_byte_range as usize
+                    ..self.chunks[idx].max_byte_range as usize]
                     .to_vec(),
             ),
         })

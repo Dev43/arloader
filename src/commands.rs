@@ -16,7 +16,7 @@ use glob::glob;
 use num_traits::cast::ToPrimitive;
 use solana_sdk::signer::keypair;
 use std::{fs, path::PathBuf, str::FromStr};
-use tokio::time::{sleep, Duration};
+use std::{thread, time};
 use url::Url;
 
 pub type CommandResult = Result<(), Error>;
@@ -111,7 +111,7 @@ pub async fn command_get_pending_count(arweave: &Arweave) -> CommandResult {
 
     let mut counter = 0;
     while counter < 60 {
-        sleep(Duration::from_secs(1)).await;
+        thread::sleep(time::Duration::from_secs(1));
         let count = arweave.get_pending_count().await?;
         println!(
             "{:>5} {} {}",

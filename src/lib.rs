@@ -96,7 +96,7 @@ use std::{
     path::{Path, PathBuf},
     str::FromStr,
 };
-use tokio::time::{sleep, Duration};
+use std::{thread::sleep, time::Duration};
 use url::Url;
 
 pub mod bundle;
@@ -108,6 +108,8 @@ pub mod solana;
 pub mod status;
 pub mod transaction;
 pub mod utils;
+
+pub mod wasm;
 
 use bundle::DataItem;
 use error::Error;
@@ -222,7 +224,7 @@ pub fn upload_transaction_chunks_stream<'a>(
     arweave: &'a Arweave,
     signed_transaction: Transaction,
     buffer: usize,
-) -> impl Stream<Item = Result<usize, Error>> + 'a {
+) -> impl Stream<Item = Result<u64, Error>> + 'a {
     let client = Client::new();
     stream::iter(0..signed_transaction.chunks.len())
         .map(move |i| {
@@ -860,7 +862,7 @@ impl Arweave {
         })
     }
 
-    pub async fn post_chunk(&self, chunk: &Chunk, client: &Client) -> Result<usize, Error> {
+    pub async fn post_chunk(&self, chunk: &Chunk, client: &Client) -> Result<u64, Error> {
         let url = self.base_url.join("chunk")?;
         // let client = reqwest::Client::new();
 
@@ -883,7 +885,7 @@ impl Arweave {
         &self,
         chunk: Chunk,
         client: Client,
-    ) -> Result<usize, Error> {
+    ) -> Result<u64, Error> {
         let mut retries = 0;
         let mut resp = self.post_chunk(&chunk, &client).await;
 
@@ -892,7 +894,7 @@ impl Arweave {
                 Ok(offset) => return Ok(offset),
                 Err(e) => {
                     log::debug!("post_chunk_with_retries: {:?}", e);
-                    sleep(Duration::from_secs(CHUNKS_RETRY_SLEEP)).await;
+                    sleep(Duration::from_secs(CHUNKS_RETRY_SLEEP));
                     retries += 1;
                     resp = self.post_chunk(&chunk, &client).await;
                 }
@@ -927,7 +929,7 @@ impl Arweave {
                 return Ok((signed_transaction.id.clone(), signed_transaction.reward));
             }
             log::debug!("post_transaction: {:?}", status);
-            sleep(Duration::from_secs(CHUNKS_RETRY_SLEEP)).await;
+            sleep(Duration::from_secs(CHUNKS_RETRY_SLEEP));
             retries += 1;
         }
 
@@ -946,12 +948,12 @@ impl Arweave {
         let transaction_with_no_data = signed_transaction.clone_with_no_data()?;
         let (id, reward) = self.post_transaction(&transaction_with_no_data).await?;
 
-        let results: Vec<Result<usize, Error>> =
+        let results: Vec<Result<u64, Error>> =
             upload_transaction_chunks_stream(&self, signed_transaction, chunks_buffer)
                 .collect()
                 .await;
 
-        results.into_iter().collect::<Result<Vec<usize>, Error>>()?;
+        results.into_iter().collect::<Result<Vec<u64>, Error>>()?;
 
         Ok((id, reward))
     }
@@ -998,7 +1000,7 @@ impl Arweave {
                         CHUNKS_RETRIES
                     );
                     retries += 1;
-                    sleep(Duration::from_millis(300)).await;
+                    sleep(Duration::from_millis(300));
                     sol_tx =
                         create_sol_transaction(solana_url.clone(), from_keypair, lamports).await?;
                     resp = get_sol_ar_signature(
@@ -1777,7 +1779,6 @@ mod tests {
         utils::TempDir,
         Arweave, Status,
     };
-    use futures::future::try_join_all;
     use glob::glob;
     use matches::assert_matches;
     use std::{fs, path::PathBuf, str::FromStr, time::Instant};
