@@ -11,8 +11,13 @@ use std::{env, fs, path::PathBuf, str::FromStr};
 const REWARD_MULTIPLIER: f32 = 2.0;
 const NUM_NFTS: u32 = 42;
 
-#[tokio::main]
-async fn main() -> CommandResult {
+fn main() -> CommandResult {
+    tokio::runtime::Builder::new_current_thread()
+        .build()
+        .unwrap()
+        .block_on(run())
+}
+async fn run() -> CommandResult {
     let ar_keypair_path = env::var("AR_KEYPAIR_PATH").ok().map(PathBuf::from);
     let sol_keypair_path = env::var("SOL_KEYPAIR_PATH").ok().map(PathBuf::from);
 

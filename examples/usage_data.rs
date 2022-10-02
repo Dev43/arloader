@@ -1,8 +1,8 @@
 use reqwest;
 use serde_json::{json, Value};
 use std::collections::HashMap;
+use std::fs;
 use std::str::FromStr;
-use tokio::fs;
 
 async fn write_data() {
     let query = r#"query Transactions ($arg1: String) {
@@ -145,17 +145,20 @@ async fn write_data() {
             .collect();
         println!("{:?}", values.len());
     }
-    fs::write("data.json", serde_json::to_string(&values).unwrap())
-        .await
-        .unwrap();
+    fs::write("data.json", serde_json::to_string(&values).unwrap()).unwrap();
 }
 
-#[tokio::main]
-async fn main() {
+fn main() {
+    tokio::runtime::Builder::new_current_thread()
+        .build()
+        .unwrap()
+        .block_on(run())
+}
+async fn run() {
     if !std::path::PathBuf::from("data.json").exists() {
         write_data().await;
     }
-    let data = fs::read_to_string("data.json").await.unwrap();
+    let data = fs::read_to_string("data.json").unwrap();
     let trans: Value = serde_json::from_str(&data).unwrap();
 
     let owner_count = trans

@@ -11,18 +11,12 @@ use crate::{
     PathsChunk, BLOCK_SIZE, WINSTONS_PER_AR,
 };
 
-use futures::{
-    future::{try_join, try_join_all},
-    StreamExt,
-};
+use futures::StreamExt;
 use glob::glob;
 use num_traits::cast::ToPrimitive;
 use solana_sdk::signer::keypair;
-use std::{path::PathBuf, str::FromStr};
-use tokio::{
-    fs,
-    time::{sleep, Duration},
-};
+use std::{fs, path::PathBuf, str::FromStr};
+use tokio::time::{sleep, Duration};
 use url::Url;
 
 pub type CommandResult = Result<(), Error>;
@@ -471,7 +465,7 @@ pub async fn command_upload_bundles(
                         log_dir.join(status.id.to_string()).with_extension("json"),
                         serde_json::to_string(&status)?,
                     )
-                    .await?;
+                    .unwrap();
                     counter += 1;
                 }
                 Err(e) => println!("{:#?}", e),
@@ -554,7 +548,7 @@ pub async fn command_upload_bundles_with_sol(
                         log_dir.join(status.id.to_string()).with_extension("json"),
                         serde_json::to_string(&status)?,
                     )
-                    .await?;
+                    .unwrap();
                     counter += 1;
                 }
                 Err(e) => println!("{:#?}", e),
@@ -687,7 +681,7 @@ where
     let paths_iter = missing_paths_iter.chain(filtered_paths_iter);
     let path_chunks = arweave.chunk_file_paths(paths_iter, bundle_size)?;
 
-    try_join_all(bundle_status_paths.iter().map(fs::remove_file)).await?;
+    let _ = bundle_status_paths.iter().map(fs::remove_file);
 
     if let Some(sol_keypair_path) = sol_keypair_path {
         command_upload_bundles_with_sol(
@@ -749,11 +743,11 @@ where
     let log_dir_metadata = log_dir.join("metadata/");
     let log_dir_metadata_string = log_dir_metadata.display().to_string();
 
-    try_join(
-        fs::create_dir_all(&log_dir_assets),
-        fs::create_dir_all(&log_dir_metadata),
-    )
-    .await?;
+    // try_join(
+    fs::create_dir_all(&log_dir_assets).unwrap();
+    fs::create_dir_all(&log_dir_metadata).unwrap();
+    // )
+    // .await?;
 
     // Upload images
     println!("\n\nUploading assets...\n");

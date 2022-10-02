@@ -1,8 +1,13 @@
 use arloader::{commands::CommandResult, Arweave};
 use std::sync::Arc;
 
-#[tokio::main]
-async fn main() -> CommandResult {
+fn main() -> CommandResult {
+    tokio::runtime::Builder::new_current_thread()
+        .build()
+        .unwrap()
+        .block_on(run())
+}
+async fn run() -> CommandResult {
     let arweave = Arc::new(Arweave::default());
 
     let mut price_futures = Vec::new();

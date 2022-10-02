@@ -6,8 +6,13 @@ use reqwest;
 
 const BUNDLE_SIZE: usize = usize::pow(1024, 2) * 256;
 
-#[tokio::main]
-async fn main() {
+fn main() {
+    tokio::runtime::Builder::new_current_thread()
+        .build()
+        .unwrap()
+        .block_on(run())
+}
+async fn run() {
     let prices = reqwest::get(
         "https://api.coingecko.com/api/v3/simple/price?ids=arweave,solana&vs_currencies=usd",
     )

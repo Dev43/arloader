@@ -13,7 +13,6 @@ use ring::{
 };
 use std::fs as fsSync;
 use std::path::PathBuf;
-use tokio::fs;
 
 /// Struct for for crypto methods.
 pub struct Provider {
@@ -36,7 +35,7 @@ impl Provider {
     /// the `keypair` property of [`Provider`] for future use in signing and funding transactions.
     pub async fn from_keypair_path(keypair_path: PathBuf) -> Result<Provider, Error> {
         debug!("{:?}", keypair_path);
-        let data = fs::read_to_string(keypair_path).await?;
+        let data = fsSync::read_to_string(keypair_path).unwrap();
 
         let jwk_parsed: JsonWebKey = data.parse().unwrap();
         Ok(Self {
@@ -75,8 +74,8 @@ impl Provider {
     /// # use url::Url;
     /// #
     /// #
-    /// # #[tokio::main]
-    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// #
+    /// # async fn run() -> Result<(), Box<dyn std::error::Error>> {
     /// let arweave = Arweave::from_keypair_path(
     ///     PathBuf::from("tests/fixtures/arweave-key-7eV1qae4qVNqsNChg3Scdi-DpOLJPCogct4ixoq1WNg.json"),
     ///     Url::from_str("http://url.com").unwrap()
@@ -108,8 +107,8 @@ impl Provider {
     /// # use arloader::crypto::Provider;
     /// # use std::path::PathBuf;
     /// #
-    /// # #[tokio::main]
-    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// #
+    /// # async fn run() -> Result<(), Box<dyn std::error::Error>> {
     /// let crypto = Provider::from_keypair_path(PathBuf::from("tests/fixtures/arweave-key-7eV1qae4qVNqsNChg3Scdi-DpOLJPCogct4ixoq1WNg.json")).await?;
     /// let message = String::from("hello, world");
     /// let rng = rand::SystemRandom::new();

@@ -1,8 +1,13 @@
 use futures::future::try_join_all;
 use reqwest;
 
-#[tokio::main]
-async fn main() {
+fn main() {
+    tokio::runtime::Builder::new_current_thread()
+        .build()
+        .unwrap()
+        .block_on(run())
+}
+async fn run() {
     let txid = "690t_L2ALtdT8mFvfKmO_u5zGel_x3EtKcKTyo2x6JY";
 
     let peers = reqwest::get("https://arweave.net/peers")

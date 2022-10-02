@@ -19,8 +19,14 @@ struct RawChunk {
     chunk: Base64,
 }
 
-#[tokio::main]
-async fn main() {
+fn main() {
+    tokio::runtime::Builder::new_current_thread()
+        .build()
+        .unwrap()
+        .block_on(run())
+}
+
+async fn run() {
     let txid = "690t_L2ALtdT8mFvfKmO_u5zGel_x3EtKcKTyo2x6JY";
 
     let offset = reqwest::get(format!("https://arweave.net/tx/{}/offset", txid))

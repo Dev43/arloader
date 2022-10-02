@@ -17,9 +17,13 @@ fn is_valid_file_path(path_str: &str) -> Result<(), String> {
         Err(_) => return Err("Not a valid path.".to_string()),
     }
 }
-
-#[tokio::main]
-async fn main() -> Result<(), String> {
+fn main() -> Result<(), String> {
+    tokio::runtime::Builder::new_current_thread()
+        .build()
+        .unwrap()
+        .block_on(run())
+}
+async fn run() -> Result<(), String> {
     let args: Vec<String> = std::env::args().collect();
     let arweave = Arweave::default();
 
@@ -30,7 +34,7 @@ async fn main() -> Result<(), String> {
     }
     is_valid_file_path(&args[1]).unwrap();
 
-    let bytes = tokio::fs::read(args[1].clone()).await.unwrap();
+    let bytes = std::fs::read(args[1].clone()).unwrap();
 
     let start = Instant::now();
     arweave

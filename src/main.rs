@@ -10,8 +10,15 @@ use clap::{
 };
 use std::{fmt::Display, path::PathBuf, str::FromStr};
 use url::Url;
-#[tokio::main]
-async fn main() -> CommandResult {
+
+fn main() -> CommandResult {
+    tokio::runtime::Builder::new_current_thread()
+        .build()
+        .unwrap()
+        .block_on(run())
+}
+
+async fn run() -> CommandResult {
     env_logger::init();
     let app_matches = get_app().get_matches();
     let base_url = app_matches

@@ -268,8 +268,7 @@ pub fn validate_chunk(
 mod tests {
     use super::*;
     use crate::transaction::Base64;
-    use std::{path::PathBuf, str::FromStr};
-    use tokio::fs;
+    use std::{fs, path::PathBuf, str::FromStr};
 
     #[tokio::test]
     async fn test_generate_leaves() -> Result<(), Error> {
@@ -277,7 +276,7 @@ mod tests {
             "tests/fixtures/arweave-key-7eV1qae4qVNqsNChg3Scdi-DpOLJPCogct4ixoq1WNg.json",
         ))
         .await?;
-        let data = fs::read("tests/fixtures/1mb.bin").await?;
+        let data = fs::read("tests/fixtures/1mb.bin").unwrap();
         let leaves: Vec<Node> = generate_leaves(data, &crypto)?;
         assert_eq!(
             leaves[1],
@@ -306,7 +305,7 @@ mod tests {
         ))
         .await?;
 
-        let data = fs::read("tests/fixtures/1mb.bin").await?;
+        let data = fs::read("tests/fixtures/1mb.bin").unwrap();
         let leaves: Vec<Node> = generate_leaves(data, &crypto)?;
         let mut nodes_iter = leaves.into_iter();
         let left = nodes_iter.next().unwrap();
@@ -337,7 +336,7 @@ mod tests {
             "tests/fixtures/arweave-key-7eV1qae4qVNqsNChg3Scdi-DpOLJPCogct4ixoq1WNg.json",
         ))
         .await?;
-        let data = fs::read("tests/fixtures/1mb.bin").await?;
+        let data = fs::read("tests/fixtures/1mb.bin").unwrap();
         let leaves: Vec<Node> = generate_leaves(data, &crypto)?;
         let layer = build_layer(leaves, &crypto)?;
         assert_eq!(
@@ -355,7 +354,7 @@ mod tests {
     #[tokio::test]
     async fn test_generate_data_root_even_chunks() -> Result<(), Error> {
         let crypto = Provider::default();
-        let data = fs::read("tests/fixtures/1mb.bin").await?;
+        let data = fs::read("tests/fixtures/1mb.bin").unwrap();
         // root id as calculate by arweave-js
         let root_actual = Base64::from_str("o1tTTjbC7hIZN6KbUUYjlkQoDl2k8VXNuBDcGIs52Hc")?;
         let leaves: Vec<Node> = generate_leaves(data, &crypto)?;
@@ -368,7 +367,7 @@ mod tests {
     async fn test_generate_proof() -> Result<(), Error> {
         let crypto = Provider::default();
         let proof_actual = Base64::from_str("7EAC9FsACQRwe4oIzu7Mza9KjgWKT4toYxDYGjWrCdp0QgsrYS6AueMJ_rM6ZEGslGqjUekzD3WSe7B5_fwipgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAnH6dASdQCigcL43lp0QclqBaSncF4TspuvxoFbn2L18EXpQrP1wkbwdIjSSWQQRt_F31yNvxtc09KkPFtzMKAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAIHiHU9QwOImFzjqSlfxkJJCtSbAox6TbbFhQvlEapSgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAA")?;
-        let data = fs::read("tests/fixtures/rebar3").await?;
+        let data = fs::read("tests/fixtures/rebar3").unwrap();
         let leaves: Vec<Node> = generate_leaves(data, &crypto)?;
         let root = generate_data_root(leaves, &crypto)?;
 
@@ -385,7 +384,7 @@ mod tests {
     #[tokio::test]
     async fn test_validate_chunks() -> Result<(), Error> {
         let crypto = Provider::default();
-        let data = fs::read("tests/fixtures/1mb.bin").await?;
+        let data = fs::read("tests/fixtures/1mb.bin").unwrap();
         let leaves: Vec<Node> = generate_leaves(data, &crypto)?;
         let root = generate_data_root(leaves.clone(), &crypto)?;
         let root_id = root.id.clone();
@@ -403,7 +402,7 @@ mod tests {
     async fn test_valid_root() -> Result<(), Error> {
         let crypto = Provider::default();
         let data_root_actual = Base64::from_str("t-GCOnjPWxdox950JsrFMu3nzOE4RktXpMcIlkqSUTw")?;
-        let data = fs::read("tests/fixtures/rebar3").await?;
+        let data = fs::read("tests/fixtures/rebar3").unwrap();
         let leaves: Vec<Node> = generate_leaves(data, &crypto)?;
         let root = generate_data_root(leaves.clone(), &crypto)?;
         assert_eq!(root.id.to_vec(), data_root_actual.0);
@@ -413,7 +412,7 @@ mod tests {
     #[tokio::test]
     async fn test_valid_root_even_chunks() -> Result<(), Error> {
         let crypto = Provider::default();
-        let data = fs::read("tests/fixtures/1mb.bin").await?;
+        let data = fs::read("tests/fixtures/1mb.bin").unwrap();
         // root id as calculate by arweave-js
         let root_actual = Base64::from_str("o1tTTjbC7hIZN6KbUUYjlkQoDl2k8VXNuBDcGIs52Hc")?;
         let leaves: Vec<Node> = generate_leaves(data, &crypto)?;
@@ -438,7 +437,7 @@ mod tests {
     #[tokio::test]
     async fn test_even_chunks() -> Result<(), Error> {
         let crypto = Provider::default();
-        let data = fs::read("tests/fixtures/1mb.bin").await?;
+        let data = fs::read("tests/fixtures/1mb.bin").unwrap();
         let leaves: Vec<Node> = generate_leaves(data, &crypto)?;
         println!("{:?}", leaves[4]);
         assert_eq!(leaves.len(), 5);

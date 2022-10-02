@@ -7,8 +7,13 @@ use rusttype::{Font, Scale};
 use std::fs;
 use std::path::PathBuf;
 
-#[tokio::main]
-async fn main() -> CommandResult {
+fn main() -> CommandResult {
+    tokio::runtime::Builder::new_current_thread()
+        .build()
+        .unwrap()
+        .block_on(run())
+}
+async fn run() -> CommandResult {
     // Generate images and metadata.
     println!("\n\nCreating images...\n");
     files_setup(10, 1280, 640, 44, "arloader", 156.0)?;

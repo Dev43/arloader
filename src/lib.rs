@@ -92,13 +92,11 @@ use solana_sdk::signer::keypair::Keypair;
 use std::{
     collections::HashMap,
     fmt::Write,
+    fs,
     path::{Path, PathBuf},
     str::FromStr,
 };
-use tokio::{
-    fs,
-    time::{sleep, Duration},
-};
+use tokio::time::{sleep, Duration};
 use url::Url;
 
 pub mod bundle;
@@ -586,7 +584,7 @@ impl Arweave {
             tags.push(content_tag);
         }
 
-        let data = fs::read(&file_path).await?;
+        let data = fs::read(&file_path).unwrap();
         let data_item = self.create_data_item(data, tags, auto_content_tag)?;
         let data_item = self.sign_data_item(data_item)?;
 
@@ -833,7 +831,7 @@ impl Arweave {
         price_terms: (u64, u64),
         auto_content_tag: bool,
     ) -> Result<Transaction, Error> {
-        let data = fs::read(file_path).await?;
+        let data = fs::read(file_path).unwrap();
         self.create_transaction(data, other_tags, last_tx, price_terms, auto_content_tag)
             .await
     }
@@ -1182,7 +1180,7 @@ impl Arweave {
         self.crypto.fill_rand(&mut rand_bytes)?;
         let suffix = base64::encode_config(rand_bytes, base64::URL_SAFE_NO_PAD);
         let log_dir = parent_dir.join(format!("arloader_{}", suffix));
-        fs::create_dir_all(&log_dir).await?;
+        fs::create_dir_all(&log_dir)?;
         Ok(log_dir)
     }
 
@@ -1282,7 +1280,7 @@ impl Arweave {
     }
 
     pub async fn read_bundle_status(&self, file_path: PathBuf) -> Result<BundleStatus, Error> {
-        let data = fs::read_to_string(&file_path).await?;
+        let data = fs::read_to_string(&file_path)?;
         let status = serde_json::from_str::<BundleStatus>(&data)?;
         Ok(status)
     }
@@ -1342,7 +1340,7 @@ impl Arweave {
             .with_extension("json");
 
         if status_path.exists() {
-            let data = fs::read_to_string(status_path).await?;
+            let data = fs::read_to_string(status_path)?;
             let status: Status = serde_json::from_str(&data)?;
             Ok(status)
         } else {
@@ -1363,13 +1361,13 @@ impl Arweave {
     }
 
     pub async fn update_bundle_status(&self, file_path: PathBuf) -> Result<BundleStatus, Error> {
-        let data = fs::read_to_string(&file_path).await?;
+        let data = fs::read_to_string(&file_path)?;
         let mut status: BundleStatus = serde_json::from_str(&data)?;
         let trans_status = self.get_status(&status.id).await?;
         status.last_modified = Utc::now();
         status.status = trans_status.status;
         status.raw_status = trans_status.raw_status;
-        fs::write(&file_path, serde_json::to_string(&status)?).await?;
+        fs::write(&file_path, serde_json::to_string(&status)?)?;
         Ok(status)
     }
 
@@ -1426,8 +1424,7 @@ impl Arweave {
         fs::write(
             log_dir.join(file_stem).with_extension("json"),
             serde_json::to_string(&status)?,
-        )
-        .await?;
+        )?;
         Ok(())
     }
 
@@ -1582,8 +1579,7 @@ impl Arweave {
                 .join(format!("manifest_{}", transaction_id))
                 .with_extension("json"),
             serde_json::to_string(&json!(consolidated_paths))?,
-        )
-        .await?;
+        )?;
         Ok(())
     }
 
@@ -1592,7 +1588,7 @@ impl Arweave {
     //-------------------------
 
     pub async fn read_metadata_file(&self, file_path: PathBuf) -> Result<Value, Error> {
-        let data = fs::read_to_string(file_path.clone()).await?;
+        let data = fs::read_to_string(file_path.clone())?;
         let metadata: Value = serde_json::from_str(&data)?;
         Ok(json!({"file_path": file_path.display().to_string(), "metadata": metadata}))
     }
@@ -1604,7 +1600,7 @@ impl Arweave {
         image_link: Option<String>,
         animation_url_link: Option<String>,
     ) -> Result<(), Error> {
-        let data = fs::read_to_string(file_path.clone()).await?;
+        let data = fs::read_to_string(file_path.clone())?;
         let mut metadata: Value = serde_json::from_str(&data)?;
         let metadata = metadata.as_object_mut().unwrap();
 
@@ -1632,7 +1628,7 @@ impl Arweave {
             properties.insert("files".to_string(), Value::Array(files_array));
         }
 
-        fs::write(file_path, serde_json::to_string(&json!(metadata))?).await?;
+        fs::write(file_path, serde_json::to_string(&json!(metadata))?)?;
         Ok(())
     }
 
@@ -1654,7 +1650,7 @@ impl Arweave {
                 .to_str()
                 .unwrap()
                 .replace("manifest_", "");
-            let data = fs::read_to_string(manifest_path.clone()).await?;
+            let data = fs::read_to_string(manifest_path.clone())?;
             let mut manifest: Value = serde_json::from_str(&data)?;
             let manifest = manifest.as_object_mut().unwrap();
 
@@ -1726,7 +1722,7 @@ impl Arweave {
                 .to_str()
                 .unwrap()
                 .replace("manifest_", "");
-            let data = fs::read_to_string(manifest_path.clone()).await?;
+            let data = fs::read_to_string(manifest_path.clone())?;
             let mut manifest: Value = serde_json::from_str(&data)?;
             let manifest = manifest.as_object_mut().unwrap();
 
@@ -1765,7 +1761,7 @@ impl Arweave {
                 .to_path_buf()
                 .join(format!("metaplex_items_{}", manifest_id))
                 .with_extension("json");
-            fs::write(&manifest_items_path, serde_json::to_string(&json!(items))?).await?;
+            fs::write(&manifest_items_path, serde_json::to_string(&json!(items))?)?;
             Ok(manifest_items_path)
         } else {
             Err(Error::ManifestNotFound)
@@ -1784,8 +1780,7 @@ mod tests {
     use futures::future::try_join_all;
     use glob::glob;
     use matches::assert_matches;
-    use std::{path::PathBuf, str::FromStr, time::Instant};
-    use tokio::fs;
+    use std::{fs, path::PathBuf, str::FromStr, time::Instant};
     use url::Url;
 
     #[tokio::test]
@@ -1877,13 +1872,14 @@ mod tests {
         let temp_dir = TempDir::from_str("./tests/").await?;
         let start = Instant::now();
 
-        let _ = try_join_all((0..100).map(|i| {
-            fs::copy(
-                file_path.clone(),
-                temp_dir.0.join(format!("{}", i)).with_extension("bin"),
-            )
-        }))
-        .await?;
+        let _: Vec<_> = (0..100)
+            .map(|i| {
+                fs::copy(
+                    file_path.clone(),
+                    temp_dir.0.join(format!("{}", i)).with_extension("bin"),
+                )
+            })
+            .collect();
         let duration = start.elapsed();
         println!("Time elapsed to prepare files: {} ms", duration.as_millis());
 

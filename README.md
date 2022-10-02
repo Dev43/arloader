@@ -10,16 +10,17 @@ Command line application and client for uploading files to [Arweave](https://www
 Upload gigabytes of files with one command. Files are read and posted to [arweave.net](https://arweave.net) asynchronously with computationally intensive bundle preparation performed in parallel on multiple threads.
 
 ## Contents
-* [Installation](#installation)
-* [NFT Usage](#nft-usage)
-* [General Usage](#general-usage)
-* [Usage with SOL](#usage-with-sol)
-* [Reward Multiplier](#reward-multiplier)
-* [Usage without Bundles](#usage-without-bundles)
-* [Benchmarks](#benchmarks)
-* [Pricing Comparison](#pricing-comparison)
-* [Roadmap](#roadmap)
-* [Transactions Prior to v0.1.51](#potential-issue-with-transactions-uploaded-prior-to-version-0.1.51)
+
+- [Installation](#installation)
+- [NFT Usage](#nft-usage)
+- [General Usage](#general-usage)
+- [Usage with SOL](#usage-with-sol)
+- [Reward Multiplier](#reward-multiplier)
+- [Usage without Bundles](#usage-without-bundles)
+- [Benchmarks](#benchmarks)
+- [Pricing Comparison](#pricing-comparison)
+- [Roadmap](#roadmap)
+- [Transactions Prior to v0.1.51](#potential-issue-with-transactions-uploaded-prior-to-version-0.1.51)
 
 ## Installation
 
@@ -39,13 +40,16 @@ cargo install arloader
 4. If you're going to use SOL, get a [Solana wallet](https://docs.solana.com/wallet-guide/cli) json file and transfer some SOL to it.
 
 ## NFT Usage
+
 The single `upload-nfts` command below assumes you have a pair of image and metadata files for each of your NFTs. To learn more about each of the steps to upload your files, check out [upload_nfts_steps](docs/upload_nfts_steps.md). See [multiple_asset_files](docs/multiple_asset_files.md) for an example of how to upload multiple media files.
 
 For a beginner's step-by-step guide of how to create an NFT in Solana (from creating a wallet, to uploading assets to arweave using arloader, to listing it in a marketplace) check out [this medium article](https://medium.com/@murki/the-ultimate-dev-guide-to-manually-minting-a-brand-new-nft-in-solana-fb5af9771688).
 
 ### Create Upload Folder
- Put your assets and associated metadata files with `.json` extension in a folder by themselves. You can use any kind of file you want. Arloader automatically adds a content type tag to your upload so that browsers will handle it correctly when accessed from Arweave.
- ```
+
+Put your assets and associated metadata files with `.json` extension in a folder by themselves. You can use any kind of file you want. Arloader automatically adds a content type tag to your upload so that browsers will handle it correctly when accessed from Arweave.
+
+```
 ├── 0.json
 ├── 0.png
 ├── 1.json
@@ -61,7 +65,9 @@ For a beginner's step-by-step guide of how to create an NFT in Solana (from crea
 ```
 
 ### Upload Assets
+
 If you want to fund transactions with SOL, run the command below where `<FILE_PATHS>` matches your asset files.
+
 ```
 arloader upload-nfts <FILE_PATHS> --with-sol --sol-keypair-path <SOL_KEYPAIR_PATH> --ar-default-keypair
 ```
@@ -73,6 +79,7 @@ arloader upload-nfts path/to/my/assets/*.mp4 --with-sol --sol-keypair-path path/
 ```
 
 To fund transactions with AR, instead run:
+
 ```
 arloader upload-nfts <FILE_PATHS> --ar-keypair-path <AR_KEYPAIR_PATH>
 ```
@@ -81,10 +88,11 @@ This will first upload your assets, logging statuses to a newly created director
 
 Then a manifest file will be created from the logged statuses and uploaded. A manifest is a special file that Arweave uses to access your files by their names, relative to the id of the manifest transaction: `https://arweave.net/<MANIFEST_ID>/<FILE_PATH>`. You'll still be able to access your files by their id at `https://arweave.net/<BUNDLE_ITEM_ID>`, but creating and uploading a manifest gives you the option of using either. Once uploaded, the manifest file itself can be accessed online at `https://arweave.net/tx/<MANIFEST_ID>/data.json`.
 
-#### Update Metadata and Upload 
+#### Update Metadata and Upload
+
 Next your metadata files will be updated with links to the uploaded assets. For the `upload-nfts` command arloader will replace the `image` key with the newyly created link and append the new link(s) to `files` key in your metadata `.json`. It defaults to using the id link, `https://arweave.net/<BUNDLE_ITEM_ID>`, but if you prefer to use the file path based link, `https://arweave.net/<MANIFEST_ID>/<FILE_PATH>`, you can pass the `--link-file` flag.
 
-After your metadata files have been updated, they will be uploaded, followed by the creation and upload of a manifest file for your metadata  files.
+After your metadata files have been updated, they will be uploaded, followed by the creation and upload of a manifest file for your metadata files.
 
 ### Get Links to Uploaded Metadata
 
@@ -135,6 +143,7 @@ If you are creating your NFTs with the [Metaplex Candy Machine](https://docs.met
             "onChain": false
         },
 ```
+
 ### Confirm All Transactions
 
 Before you create your tokens, make sure that all of your transactions have been confirmed at least 25 times. Run the command below where `<LOG_DIR>` refers to the automatically created directory in your assets folder that begins with `arloader_`.
@@ -174,7 +183,7 @@ Updating metadata manifest status...
  id                                           status     confirms
 ------------------------------------------------------------------
  fo9P3OOq78REajk48vFWbKfIhw6mDzgjANQIh3L7Njs  Confirmed        57
- ```
+```
 
 ## General Usage
 
@@ -183,6 +192,7 @@ If you're uploading more than one file, you should pretty much always be using b
 Arloader will create as many bundles as necessary to upload all of your files. Your files are read asynchronously, bundled in parallel across multiple threads and then posted to [arweave.net](https://arweave.net). Arloader supports bundle sizes up to 200 MB, with a default of 100 MB. This should work fine for individual files up to 100 MB. If your files sizes are bigger than 100 MB (but smaller than 200 MB), you can specify a larger bundle size with the `--bundles-size` argument - `--bundle-size 200` to specify a size of 200 MB, for example. If your file sizes are bigger than 200 MB, you can upload them as individual files by passing the `--no-bundle` flag.
 
 ### Estimate Cost
+
 To get an estimate of the cost of uploading your files run
 
 ```
@@ -192,6 +202,7 @@ arloader estimate <FILE_PATHS>
 `<FILE_PATHS>` can be a glob, like `path/to/my/files/*.png`, or one or more files separated by spacees, like `path/to/my/files/2.mp4 path/to/my/files/0.mp path/to/my/files/2.mp`.
 
 ### Upload
+
 To upload your files run
 
 ```
@@ -208,31 +219,32 @@ bundle txid                                   items      KB  status       confir
  -OAWdFiGS4NKOZXVJG3yZ0yN4xydGOhfQGX2FCdlG88       2       3  Submitted           0
  UBWGFKyTrUVaCa7wi_181FjAd545vdoHmBQEdlaVdA4       2       3  Submitted           0
  qzQlASZrQXNF9HYIOTPjEZL9uy1U9Ou086kCkQWqld0       2       3  Submitted           0
- ```
+```
 
 A status object gets written to a json file named `<TXID>.json` in a newly created sub directory in the parent folder of the first file in `<FILE_PATHS>`. The folder will be named `arloader_<RAND_CHAR>`. You can specify an existing folder to write statuses to by passing the `--log-dir` argument.
 
 ```json
 {
-    "id": "_-bhdsi4irDEWz8R9wXT-1c06WVQVSMAmQxVF9OkW94",
-    "status": "Submitted",
-    "file_paths": {
-        "tests/fixtures/8.png": {
-            "id": "0jd-NTQUZhmnKRY-kMt2vEcmSqgzKOLX_P3QYw6CaNE"
-        },
-        "tests/fixtures/9.png": {
-            "id": "1XdiLkoZ5POHsNx7eLyRgisjnxTLzW8SxGsRcb22j84"
-        }
+  "id": "_-bhdsi4irDEWz8R9wXT-1c06WVQVSMAmQxVF9OkW94",
+  "status": "Submitted",
+  "file_paths": {
+    "tests/fixtures/8.png": {
+      "id": "0jd-NTQUZhmnKRY-kMt2vEcmSqgzKOLX_P3QYw6CaNE"
     },
-    "number_of_files": 2,
-    "data_size": 3546,
-    "created_at": "2021-11-23T05:47:41.948103600Z",
-    "last_modified": "2021-11-23T05:47:41.948107100Z",
-    "reward": 50947968
+    "tests/fixtures/9.png": {
+      "id": "1XdiLkoZ5POHsNx7eLyRgisjnxTLzW8SxGsRcb22j84"
+    }
+  },
+  "number_of_files": 2,
+  "data_size": 3546,
+  "created_at": "2021-11-23T05:47:41.948103600Z",
+  "last_modified": "2021-11-23T05:47:41.948107100Z",
+  "reward": 50947968
 }
 ```
 
 ### Check Status
+
 After uploading your files, you'll want to check on their status to make sure the have been uploaded successfully and that they ultimately are confirmed at least 25 times before you can be absolutely certain they have been permanently uploaded.
 
 ```
@@ -254,14 +266,16 @@ bundle txid                                   items      KB  status       confir
  M2QZYxUqw3ZJ2KXzU4pfw9fFIkVOSrJbSpE7NAvHLvo       2       3  Confirmed          45
  qvci4i6Mfr-5_NHI1bL-Omv16QEUw3iiirzv4fXefnM       2       3  Confirmed          45
  NAP2vTKQdMG_eKyKBYz3876T4yBFl4oYFYqwwwnHbFA       2       3  Confirmed          45
- ```
+```
 
 ### Re-Upload
+
 If you find that not all of your transactions have a status of `Confirmed` or that the number of confirmations is below 25 after some period of time, you will want to re-upload your transactions with the following command:
 
 ```
 arloader reupload <FILE_PATHS> --log-dir <LOG_DIR> --statuses <STATUSES> --max-confirmations <MAX_CONFIRMATIONS>
 ```
+
 This will first check to make sure that all of the files in `<FILE_PATHS>` are included in the status objects in `<LOG_DIR>`, adding them to the list of files to be reuploaded. Then it will filter the paths in the status objects based on `<STATUSES>` and `<MAX_CONFIRM>`. You can provide multiple statuses and max confirmations will only re-upload transactions with fewer than `<MAX_CONFIRM>` confirmations.
 
 For example, if had uploaded a bunch of jpegs that were in `my/images` and statuses had been logged to `my/images/arloader_hehQJu-RJpo`, if you wanted to re-upload transactions with either a status of `NotFound` or `Pending`, you would run:
@@ -276,14 +290,15 @@ If you wanted to reupload anything with less than 25 confirmations, you would ru
 arloader reupload my/images/*.jpeg --log-dir my/images/arloader_hehQJu-RJpo --max-confirms 25
 ```
 
-
 ### Create Manifest
+
 Once you have a sufficient number of confirmations of your files, you may want to create a manifest file, which is used by the Arweave gateways to provide relative paths to your files. In order to do that, you run
 
 ```
 arloader upload-manifest <LOG_DIR>
 ```
-where `<LOG_DIR>` is the directory containing your bundle status json files. This will go through and consolidate the paths from each of the bundles, create a consolidated manifest, upload it to Arweave and then write a file named `manifest_<TXID>.json`to `<LOG_DIR>`. Once the transaction uploading the manifest has been confirmed, you will be able to access your files and both `https://arweave.net/<BUNDLE_ITEM_ID>` and `https://arweave.net/<MANIFEST_ID>/<FILE_PATH>`  where `MANIFEST_ID` is the id of the manifest transaction and `FILE_PATH` is the relative path of the file included with the `upload` command.
+
+where `<LOG_DIR>` is the directory containing your bundle status json files. This will go through and consolidate the paths from each of the bundles, create a consolidated manifest, upload it to Arweave and then write a file named `manifest_<TXID>.json`to `<LOG_DIR>`. Once the transaction uploading the manifest has been confirmed, you will be able to access your files and both `https://arweave.net/<BUNDLE_ITEM_ID>` and `https://arweave.net/<MANIFEST_ID>/<FILE_PATH>` where `MANIFEST_ID` is the id of the manifest transaction and `FILE_PATH` is the relative path of the file included with the `upload` command.
 
 ```json
 {
@@ -316,6 +331,7 @@ where `<LOG_DIR>` is the directory containing your bundle status json files. Thi
 ```
 
 You can run the following command to get an update on the status of your manifest transaction.
+
 ```
 arloader get-status <MANIFEST_ID>
 ```
@@ -342,11 +358,12 @@ This will create the same stream of bundles that gets created without using SOL 
 
 ## Reward Multiplier
 
-Arweave is limited to approximately 1,000 transactions every two minutes so if you happen to submit your transaction at a time when there are a lot of pending transactions, it may take longer to get written, or if there are enough more attractive transaction, i.e, with higher rewards, it may not get written at all. To check the current number of pending transactions, run 
+Arweave is limited to approximately 1,000 transactions every two minutes so if you happen to submit your transaction at a time when there are a lot of pending transactions, it may take longer to get written, or if there are enough more attractive transaction, i.e, with higher rewards, it may not get written at all. To check the current number of pending transactions, run
 
 ```
 arloader pending
 ```
+
 and that will print the number of pending transactions every second for one minute.
 
 ```
@@ -359,7 +376,7 @@ and that will print the number of pending transactions every second for one minu
   125 | ▥▥▥
   326 | ▥▥▥▥▥▥▥
   128 | ▥▥▥
-  ```
+```
 
 Given that Arloader bundles by default, your transaction is hopefully relatively attractive and you don't need to increase the reward to get it written in a timely fashion. However, if you see that there are a lot of transactions pending and you want to be sure your transaction goes through quickly, you can adjust the reward with `--reward-multiplier` followed by something tha can be parsed as a float between `0.0` and `3.0`. The reward included in your transaction will then be multiplied by this factor when it gets submitted. Similar to the `--with-sol` flag, you can add `--reward-multiplier` to both `estimate` and `upload` commands.
 
@@ -373,27 +390,25 @@ The table below shows the average duration required to create transactions acros
 
 For an NFT project with 10,000 tokens it would take 20 seconds to process the images if they were 256 KB. If the images were 4 MB, it would take approximately two minutes.
 
-
 | File Size | Num Files | Total Size | Data Item | Data Items | Bundle | Transaction | Total | Per 1,000 |
 | --------: | --------: | ---------: | --------: | ---------: | -----: | ----------: | ----: | --------: |
 |     32 KB |       500 |         16 |         4 |        430 |     30 |          40 |   0.5 |       1.0 |
 |    256 KB |       500 |        128 |         4 |        493 |    179 |         326 |   1.0 |       2.0 |
 |      1 MB |       500 |        512 |         5 |        616 |    903 |        1033 |   2.6 |       4.1 |
 |      4 MB |       150 |        614 |        11 |        360 |   1050 |        1554 |   3.0 |      10.4 |
-|     16 MB |       50  |        819 |        35 |        393 |   1403 |        2058 |   3.9 |      77.1 |
-
+|     16 MB |        50 |        819 |        35 |        393 |   1403 |        2058 |   3.9 |      77.1 |
 
 Benchmarks include only processing activity and exclude reading files from disk and uploading them to the network. Benchmarks were performed on an Intel(R) Core(TM) i7-8750H CPU @ 2.20GHz processor with 6 cores.
 
-| Column | Description |
-| --- | --- |
-| Total Size | File size x number of files in megabytes.|
-| Data Item | Time in milliseconds required to create a single data item of the file size. The entails creating a merkle tree data root, generating an id from the deep hash algorithm and signing it.|
-| Data Items | Time in milliseconds required to create data items for the number of files. Data items are processed in parallel using all available cores.|
-| Bundle | Time in milliseconds required to create a single bundle from the data items. This entails serializing each of the data items and packing them together.|
-| Transaction |Time in milliseconds required to create a transaction from the bundle. This entails creating a merkle tree data root, generating an id from the deep hash algorithm and signing it.|
-| Total | Sum of the time required to create data items, bundle and transaction in seconds.|
-| Per 1,000 | Extrapolation of total to 1,000 files.|
+| Column      | Description                                                                                                                                                                              |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Total Size  | File size x number of files in megabytes.                                                                                                                                                |
+| Data Item   | Time in milliseconds required to create a single data item of the file size. The entails creating a merkle tree data root, generating an id from the deep hash algorithm and signing it. |
+| Data Items  | Time in milliseconds required to create data items for the number of files. Data items are processed in parallel using all available cores.                                              |
+| Bundle      | Time in milliseconds required to create a single bundle from the data items. This entails serializing each of the data items and packing them together.                                  |
+| Transaction | Time in milliseconds required to create a transaction from the bundle. This entails creating a merkle tree data root, generating an id from the deep hash algorithm and signing it.      |
+| Total       | Sum of the time required to create data items, bundle and transaction in seconds.                                                                                                        |
+| Per 1,000   | Extrapolation of total to 1,000 files.                                                                                                                                                   |
 
 ## Pricing Comparison
 
@@ -431,4 +446,7 @@ file size | num files | arweave | bundlr | arweave total | bundlr total | arweav
 - [ ] Include duration in completion output.
 
 ## Potential Issue with Transactions Uploaded Prior to Version 0.1.51
+
 The way arloader was formatting transactions for upload was not entirely compatible with the Arweave protocol prior to version 1.51. For transactions bigger than 256 KB it is possible that even though your transactions are visible and are showing more than 25 confirmations that they were not written to the Arweave blockchain. If you would like assistance determining whether your transactions were impacted, please open an issue and I will be happy to help, including paying for any necessary re-uploading.
+
+TODO - change the way arweave is built so we can pass in an HTTP client at will.

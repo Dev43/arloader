@@ -203,9 +203,9 @@ mod tests {
         transaction::{Base64, FromUtf8Strs, Tag, ToItems},
         Arweave,
     };
+    use std::fs;
     use std::path::PathBuf;
     use std::str::FromStr;
-    use tokio::fs;
     use url::Url;
 
     async fn get_test_data_item() -> DataItem {
@@ -251,9 +251,7 @@ mod tests {
 
         let bytes = data_item.serialize().unwrap();
 
-        let expected_bytes = fs::read_to_string("tests/fixtures/data_item_ser.json")
-            .await
-            .unwrap();
+        let expected_bytes = fs::read_to_string("tests/fixtures/data_item_ser.json").unwrap();
         let expected_bytes: Vec<u8> = serde_json::from_str(&expected_bytes).unwrap();
 
         assert_eq!(&bytes, &expected_bytes);

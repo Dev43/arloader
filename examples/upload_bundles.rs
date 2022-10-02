@@ -13,8 +13,14 @@ const FILE_SIZE: usize = 100_000;
 const BUNDLE_SIZE: u64 = 100_000_000;
 const BUFFER: usize = 5;
 
-#[tokio::main]
-async fn main() -> CommandResult {
+fn main() -> CommandResult {
+    tokio::runtime::Builder::new_current_thread()
+        .build()
+        .unwrap()
+        .block_on(run())
+}
+
+async fn run() -> CommandResult {
     let ar_keypair_path = env::var("AR_KEYPAIR_PATH").ok().map(PathBuf::from);
     let sol_keypair_path = env::var("SOL_KEYPAIR_PATH").ok().map(PathBuf::from);
 
