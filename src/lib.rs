@@ -571,11 +571,6 @@ impl Arweave {
         mut tags: Vec<Tag<String>>,
         auto_content_tag: bool,
     ) -> Result<DataItem, Error> {
-        tags.push(Tag::<String>::from_utf8_strs(
-            "User-Agent",
-            &format!("arloader/{}", VERSION),
-        )?);
-
         // Get content type from [magic numbers](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types)
         // and include additional tags if any.
         if auto_content_tag {
@@ -588,13 +583,13 @@ impl Arweave {
             tags.push(Tag::<String>::from_utf8_strs("Content-Type", content_type)?)
         }
 
-        // let mut anchor = Base64(Vec::with_capacity(32));
-        // self.crypto.fill_rand(&mut anchor.0)?;
+        let mut anchor = Base64(Vec::with_capacity(32));
+        self.crypto.fill_rand(&mut anchor.0)?;
 
         Ok(DataItem {
             data: Base64(data),
             tags,
-            // anchor,
+            anchor,
             ..DataItem::default()
         })
     }
